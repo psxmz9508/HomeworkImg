@@ -449,7 +449,7 @@ void MainWindow::thresholdSliderSlot(int threshold)
 
 void MainWindow::lineSliderSlot(int a)//y=ax+10
 {
-    delete lineimg;
+
     lineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
     for(int i=0;i<imageWidth;i++)
     {
@@ -482,9 +482,7 @@ void MainWindow::lineSliderSlot(int a)//y=ax+10
             default:
                 break;
             }
-            lineimg->setPixel(i,j,qRgb(aver,
-                                      aver,
-                                      aver));
+
         }
     }
     lineLabel->setPixmap(QPixmap::fromImage(*lineimg));
@@ -493,9 +491,7 @@ void MainWindow::lineSliderSlot(int a)//y=ax+10
 
 void MainWindow::unlineSliderSlot(int a)
 {
-    delete lineimg;
-    delete lineimg;
-    lineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
+    unlineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
     for(int i=0;i<imageWidth;i++)
     {
         for(int j=0;j<imageHeight;j++)
@@ -503,12 +499,29 @@ void MainWindow::unlineSliderSlot(int a)
             int aver = (imageColor[0][i*imageWidth+j]+
                        imageColor[1][i*imageWidth+j]+
                        imageColor[2][i*imageWidth+j])/3;
-            image1->setPixel(i,j,qRgb(aver,
-                                      aver,
-                                      aver));
+            switch (a) {
+            case 1:
+                unlineimg->setPixel(i,j,qRgb(aver*aver/255+10,
+                                          aver*aver/255+10,
+                                          aver*aver/255+10));
+                break;
+            case 2:
+                unlineimg->setPixel(i,j,qRgb(sqrt(aver)+100,
+                                          sqrt(aver)+100,
+                                          sqrt(aver)+100));
+                break;
+            case 3:
+                unlineimg->setPixel(i,j,qRgb(log(aver)+50,
+                                          log(aver)+50,
+                                          log(aver)+50));
+                break;
+
+            default:
+                break;
+            }
         }
     }
-    binarizationLabel->setPixmap(QPixmap::fromImage(*image1));
+    unlineLabel->setPixmap(QPixmap::fromImage(*unlineimg));
 }
 
 
