@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #define MAX_PAGES 5
+#define WIDTH 960
+#define HEIGHT 700
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
@@ -72,9 +74,16 @@ private:
 
     //线性运算
     QLabel *linetransLabel;
-    QLineEdit *chansa;
-    QLineEdit *chansb;//y=ax+b
+    QSlider *lineSlider;
+    QLabel *lineLabel;
     QImage *lineimg;
+
+    //非线性运算
+    QLabel *unlinetransLabel;
+    QSlider *unlineSlider;
+    QLabel *unlineLabel;
+    QImage *unlineimg;
+
 
 private slots:
     void addressButttonSlot();
@@ -83,6 +92,8 @@ private slots:
     void saveButtonSlot();
     void thresholdSliderSlot(int);
     void pageSliderSlot(int);
+    void lineSliderSlot(int);
+    void unlineSliderSlot(int);
 signals:
 
 public slots:

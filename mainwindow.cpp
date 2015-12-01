@@ -3,7 +3,7 @@
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
 {
     //主布局
-    this->setFixedSize(860,640);
+    this->setFixedSize(WIDTH,HEIGHT);
 
     for(int i=0;i<MAX_PAGES;i++)
     {
@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
         pages[i]->hide();
     }
 
-    //page1相关
+    //八幅二值图
     for(int i=0;i<8;i++)
     {
         bitChartLabel[i] = new QLabel(pages[1]);
@@ -27,58 +27,78 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
     bitChartLabel[6]->setGeometry(590,200,120,120);
     bitChartLabel[7]->setGeometry(720,200,120,120);
 
+    //页面转换相关
     currentPage = 0;
     pageSlider = new QSlider(Qt::Horizontal,this);
     pageSlider->setRange(0,MAX_PAGES-1);
-    pageSlider->setGeometry(700,10,50,28);
+    pageSlider->setGeometry(90,10,50,28);
     pageLabel = new QLabel(tr("页面转换："),this);
-    pageLabel->setGeometry(630,10,70,28);
+    pageLabel->setGeometry(20,10,70,28);
 
-    //地址栏标签
-    addressLineEdit = new QLineEdit(this);
-    addressButtton = new QPushButton("打开图片",this);
-    addressLineEdit->setGeometry(10,10,400,25);
-    addressButtton->setGeometry(450,10,100,28);
+    //地址栏
+    addressLineEdit = new QLineEdit("请打开图片",this);
+    addressButtton = new QPushButton("打开",this);
+    addressLineEdit->setGeometry(320,10,300,25);
+    addressButtton->setGeometry(620,10,60,28);
 
-    //原始图片标签
+    //原始图片
     mainLabel = new QLabel(this);
-    mainLabel->setGeometry(20,50,280,280);
+    mainLabel->setGeometry(20,50,300,300);
     mainLabel->setScaledContents(true);
 
     image = new QImage();
 
-    //采样率量化率标签
+    //采样率
     sqLabel = new QLabel(pages[0]);
     sqLabel->setScaledContents(true);
-    sqLabel->setGeometry(422,50,280,280);
+    sqLabel->setGeometry(330,50,300,300);
     samplingSlider = new QSlider(pages[0]);
     samplingSlider->setRange(1,128);
     samplingLabel = new QLabel("采样率",pages[0]);
+    samplingLabel->setGeometry(732,50,35,20);
+    samplingSlider->setGeometry(742,80,20,200);
+    //量化率
     quantizationLabel = new QLabel("量化率",pages[0]);
     quantizationSlider = new QSlider(pages[0]);
     quantizationSlider->setRange(1,32);
     saveButton = new QPushButton("保存",pages[0]);
-
-    samplingLabel->setGeometry(732,50,35,20);
     quantizationLabel->setGeometry(780,50,35,20);
-    samplingSlider->setGeometry(742,80,20,200);
     quantizationSlider->setGeometry(790,80,20,200);
-    saveButton->setGeometry(750,290,50,30);
-
+    saveButton->setGeometry(680,10,60,30);
     image0 = new QImage();
 
     //二值化标签
     binarizationLabel = new QLabel(pages[0]);
-    binarizationLabel->setGeometry(422,350,280,280);
+    binarizationLabel->setGeometry(330,360,300,300);
     binarizationLabel->setScaledContents(true);
     thresholdLabel = new QLabel("阈值",pages[0]);
     thresholdSlider = new QSlider(pages[0]);
     thresholdSlider->setRange(0,255);
     thresholdLabel->setGeometry(765,600,50,30);
     thresholdSlider->setGeometry(765,380,20,200);
-
     image1 = new QImage();
 
+
+    //线性变换
+    lineLabel = new QLabel(pages[2]);
+    lineLabel->setScaledContents(true);
+    lineLabel->setGeometry(330,50,300,300);
+    lineSlider= new QSlider(pages[2]);
+    lineSlider->setRange(1,4);
+    linetransLabel = new QLabel("线性",pages[2]);
+    linetransLabel->setGeometry(650,400,35,20);
+    lineSlider->setGeometry(650,420,20,200);
+
+    //线性变换
+    unlineLabel = new QLabel(pages[2]);
+    unlineLabel->setScaledContents(true);
+    unlineLabel->setGeometry(640,50,300,300);
+    unlineSlider= new QSlider(pages[2]);
+    unlineSlider->setRange(1,3);
+    unlinetransLabel = new QLabel("非线性",pages[2]);
+    unlinetransLabel->setGeometry(700,400,35,20);
+    unlineSlider->setGeometry(700,420,20,200);
+    //开始时在第一页
     pages[0]->show();
 
     connect(addressButtton,SIGNAL(clicked(bool)),this,SLOT(addressButttonSlot()));
@@ -87,6 +107,8 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
     connect(saveButton,SIGNAL(clicked(bool)),this,SLOT(saveButtonSlot()));
     connect(thresholdSlider,SIGNAL(valueChanged(int)),this,SLOT(thresholdSliderSlot(int)));
     connect(pageSlider,SIGNAL(valueChanged(int)),this,SLOT(pageSliderSlot(int)));
+    connect(lineSlider,SIGNAL(valueChanged(int)),this,SLOT(lineSliderSlot(int)));
+    connect(unlineSlider,SIGNAL(valueChanged(int)),this,SLOT(unlineSliderSlot(int)));
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
@@ -227,7 +249,6 @@ void MainWindow::addressButttonSlot()
     sqLabel->setPixmap(QPixmap::fromImage(*image));
 
 
-
     for(int x=0;x<imageWidth;x++)
     {
         for(int y=0;y<imageHeight;y++)
@@ -272,6 +293,8 @@ void MainWindow::addressButttonSlot()
         }
         bitChartLabel[i]->setPixmap(QPixmap::fromImage(*bitImage[i]));
     }
+
+
 
     this->update();
 
@@ -423,6 +446,71 @@ void MainWindow::thresholdSliderSlot(int threshold)
     }
     binarizationLabel->setPixmap(QPixmap::fromImage(*image1));
 }
+
+void MainWindow::lineSliderSlot(int a)//y=ax+10
+{
+    delete lineimg;
+    lineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
+    for(int i=0;i<imageWidth;i++)
+    {
+        for(int j=0;j<imageHeight;j++)
+        {
+            int aver = (imageColor[0][i*imageWidth+j]+
+                       imageColor[1][i*imageWidth+j]+
+                       imageColor[2][i*imageWidth+j])/3;
+            switch (a) {
+            case 1:
+                lineimg->setPixel(i,j,qRgb(2*aver+10,
+                                          2*aver+10,
+                                          2*aver+10));
+                break;
+            case 2:
+                lineimg->setPixel(i,j,qRgb(4*aver+10,
+                                          4*aver+10,
+                                          4*aver+10));
+                break;
+            case 3:
+                lineimg->setPixel(i,j,qRgb(-2*aver+10,
+                                          -2*aver+10,
+                                          -2*aver+10));
+                break;
+            case 4:
+                lineimg->setPixel(i,j,qRgb(-4*aver+10,
+                                          -4*aver+10,
+                                          -4*aver+10));
+                break;
+            default:
+                break;
+            }
+            lineimg->setPixel(i,j,qRgb(aver,
+                                      aver,
+                                      aver));
+        }
+    }
+    lineLabel->setPixmap(QPixmap::fromImage(*lineimg));
+}
+
+
+void MainWindow::unlineSliderSlot(int a)
+{
+    delete lineimg;
+    delete lineimg;
+    lineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
+    for(int i=0;i<imageWidth;i++)
+    {
+        for(int j=0;j<imageHeight;j++)
+        {
+            int aver = (imageColor[0][i*imageWidth+j]+
+                       imageColor[1][i*imageWidth+j]+
+                       imageColor[2][i*imageWidth+j])/3;
+            image1->setPixel(i,j,qRgb(aver,
+                                      aver,
+                                      aver));
+        }
+    }
+    binarizationLabel->setPixmap(QPixmap::fromImage(*image1));
+}
+
 
 void MainWindow::pageSliderSlot(int page)
 {
