@@ -28,7 +28,7 @@ public:
     void paintEvent(QPaintEvent *);
 private:
 
-    //页面栏
+    //主界面
     QWidget *pages[MAX_PAGES];
     int currentPage;
     QSlider *pageSlider;
@@ -62,10 +62,18 @@ private:
     int imageColor[3][100000];
 
     //直方图
-    void darwHistogram();
-
-
+    void drawHistogram();
+    void drawHistogram1();//均衡化直方图
+    void changeimg(QImage*,int,int);
+    int oralx;
+    int oraly;
+    int xmax;
+    int ymax;
+    QImage *paintimg;
+    int tempcolor[3][100000];
+    int grey[100000];
     //二值化标签
+
 
     QLabel *binarizationLabel;
     QSlider *thresholdSlider;

@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
         pages[i]->hide();
     }
 
+
     //八幅二值图
     for(int i=0;i<8;i++)
     {
@@ -113,36 +114,27 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
-    if (currentPage==0)
-    {
+
         if(fileAddress==NULL)
         {
-            QPainter painter(this);
-            QPen pen;
-            pen.setColor(Qt::black);
-            painter.setPen(pen);
 
-            //纵轴
-            painter.drawLine(20,620,20,350);
-            painter.drawLine(20,350,15,355);
-            painter.drawLine(20,350,25,355);
-            painter.drawText(20,350,tr("像素个数"));
-
-            //横轴
-            painter.drawLine(20,620,410,620);
-            painter.drawLine(410,620,405,625);
-            painter.drawLine(410,620,405,615);
-            painter.drawText(380,610,tr("灰度"));
-            painter.end();
         }
         else
         {
-            darwHistogram();
+            if(currentPage==2){
+                drawHistogram();
+                drawHistogram1();
+            }
+            else{
+                drawHistogram();
+            }
         }
-    }
 }
 
-void MainWindow::darwHistogram()
+
+
+/***************************绘制直方图***************************/
+void MainWindow::drawHistogram()
 {
     int hist[256];
     for(int i=0;i<256;i++)
@@ -153,7 +145,7 @@ void MainWindow::darwHistogram()
 
     for(int i=0;i<imageHeight*imageWidth;i++)
     {
-        temp = imageColor[0][i];
+        temp = tempcolor[0][i];
         hist[temp]++;
     }
 
@@ -201,36 +193,152 @@ void MainWindow::darwHistogram()
     pen.setColor(Qt::black);
     painter.setPen(pen);
 
-    painter.drawText(320,350,tr("平均灰度："));
-    painter.drawText(380,350,tr(QString::number(aver).toLocal8Bit().data()));
-    painter.drawText(320,370,tr("中值灰度："));
-    painter.drawText(380,370,tr(QString::number(mid).toLocal8Bit().data()));
-    painter.drawText(320,390,tr("标准差："));
-    painter.drawText(380,390,tr(QString::number(stdDev).toLocal8Bit().data()));
-    painter.drawText(320,410,tr("像素总数："));
-    painter.drawText(380,410,tr(QString::number(sum1).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+20,tr("平均灰度："));
+    painter.drawText(oralx+60,ymax+20,tr(QString::number(aver).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+40,tr("中值灰度："));
+    painter.drawText(oralx+60,ymax+40,tr(QString::number(mid).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+60,tr("标准差："));
+    painter.drawText(oralx+60,ymax+60,tr(QString::number(stdDev).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+80,tr("像素总数："));
+    painter.drawText(oralx+60,ymax+80,tr(QString::number(sum1).toLocal8Bit().data()));
 
     //纵轴
-    painter.drawLine(20,620,20,350);
-    painter.drawLine(20,350,15,355);
-    painter.drawLine(20,350,25,355);
-    painter.drawText(20,350,tr("像素个数"));
+    painter.drawLine(oralx,oraly,oralx,ymax);
+    painter.drawLine(oralx,ymax,oralx-5,ymax+5);
+    painter.drawLine(oralx,ymax,oralx+5,ymax+5);
+    painter.drawText(oralx+3,ymax,tr("像素个数"));
 
     //横轴
-    painter.drawLine(20,620,320,620);
-    painter.drawLine(320,620,315,625);
-    painter.drawLine(320,620,315,615);
-    painter.drawText(320,610,tr("灰度"));
+    painter.drawLine(oralx,oraly,xmax,oraly);
+    painter.drawLine(xmax,oraly,xmax-5,oraly-5);
+    painter.drawLine(xmax,oraly,xmax-5,oraly+5);
+    painter.drawText(xmax,oraly-3,tr("灰度"));
 
     for(int i=0;i<256;i++)
     {
-        painter.drawLine(20+i,620,20+i,620-hist[i]);
+        painter.drawLine(oralx+i,oraly,oralx+i,oraly-hist[i]);
         if(i%30==0)
-            painter.drawText(20+i,630,tr(QString::number(i).toLocal8Bit().data()));
+            painter.drawText(oralx+i,oraly+10,tr(QString::number(i).toLocal8Bit().data()));
     }
     painter.end();
 }
 
+/***************************绘制均衡化直方图***************************/
+void MainWindow::drawHistogram1()
+{
+    int hist[256];
+    int result[256];
+    float phist[256];
+    float phisttemp[256];
+    int eqhist[256];
+    for(int i=0;i<256;i++)
+    {
+        hist[i]=0;
+        result[i]=0;
+        phist[i]=0;
+        phisttemp[i]=0;
+        eqhist[i]=0;
+    }
+    int temp;
+
+    for(int i=0;i<imageHeight*imageWidth;i++)
+    {
+        temp = tempcolor[0][i];
+        hist[temp]++;
+    }
+
+    for(int i=0;i<256;i++){
+        phist[i]=(float)hist[i]/(float)imageHeight*imageWidth;
+    }
+
+    for(int i =1;i<256;i++){
+        if(i==0)
+            phisttemp[i]=phist[i];
+        else
+            phisttemp[i]=phisttemp[i-1]+phist[i];
+    }
+
+    for(int i =1;i<256;i++){
+        eqhist[i]=int(255.0*phisttemp[i]+0.5);
+    }
+    for(int i=0;i<255;i++){
+        result[i] = hist[eqhist[i]];
+    }
+
+    int sum=0;
+    for(int i=0;i<256;i++)
+    {
+       sum+=result[i]*i;
+    }
+    int aver = (int)(sum/(imageHeight*imageWidth));
+    temp=0;
+    int mid;
+    int sum1=imageHeight*imageWidth;
+    int halfSum = int(sum1*0.5);
+    for(int i=0;i<256;i++)
+    {
+        temp+=result[i];
+        if(temp>=halfSum)
+        {
+            mid = i;
+            break;
+        }
+    }
+    int stdDev;
+    int sum0=0;
+    for(int i=0;i<256;i++)
+    {
+        sum0+=result[i]*(i-aver)*(i-aver);
+    }
+    stdDev=(int)(sqrt(sum0/sum1));
+
+
+    int max=0;
+    for(int i=0;i<256;i++)
+    {
+        if(result[i]>max)
+            max=result[i];
+    }
+    for(int i=0;i<256;i++)
+    {
+        result[i]=(int)((result[i]/(float)max)*250);
+    }
+
+    QPainter painter(this);
+    QPen pen;
+    pen.setColor(Qt::black);
+    painter.setPen(pen);
+
+    painter.drawText(oralx,ymax+20,tr("平均灰度："));
+    painter.drawText(oralx+60,ymax+20,tr(QString::number(aver).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+40,tr("中值灰度："));
+    painter.drawText(oralx+60,ymax+40,tr(QString::number(mid).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+60,tr("标准差："));
+    painter.drawText(oralx+60,ymax+60,tr(QString::number(stdDev).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+80,tr("像素总数："));
+    painter.drawText(oralx+60,ymax+80,tr(QString::number(sum1).toLocal8Bit().data()));
+
+    //纵轴
+    painter.drawLine(oralx,oraly,oralx,ymax);
+    painter.drawLine(oralx,ymax,oralx-5,ymax+5);
+    painter.drawLine(oralx,ymax,oralx+5,ymax+5);
+    painter.drawText(oralx+3,ymax,tr("像素个数"));
+
+    //横轴
+    painter.drawLine(oralx,oraly,xmax,oraly);
+    painter.drawLine(xmax,oraly,xmax-5,oraly-5);
+    painter.drawLine(xmax,oraly,xmax-5,oraly+5);
+    painter.drawText(xmax,oraly-3,tr("灰度"));
+
+    for(int i=0;i<256;i++)
+    {
+        painter.drawLine(oralx+i,oraly,oralx+i,oraly-result[i]);
+        if(i%30==0)
+            painter.drawText(oralx+i,oraly+10,tr(QString::number(i).toLocal8Bit().data()));
+    }
+    painter.end();
+}
+/***************************获取图片地址 处理图片数据***************************/
 void MainWindow::addressButttonSlot()
 {
     fileAddress = QFileDialog::getOpenFileName(this,
@@ -295,11 +403,13 @@ void MainWindow::addressButttonSlot()
     }
 
 
-
+    changeimg(image,20,660);
     this->update();
 
 }
 
+
+/***************************采样**************************/
 void MainWindow::samplingSlot(int samplingInt)
 {
     int d = (int)(256/samplingInt);
@@ -353,9 +463,12 @@ void MainWindow::samplingSlot(int samplingInt)
                                       imageColor[2][i*imageWidth+j]));
     }
     sqLabel->setPixmap(QPixmap::fromImage(*image0));
+    changeimg(image0,20,660);
     this->update();
 }
 
+
+/***************************量化***************************/
 void MainWindow::quantizationSlot(int quantizationInt)
 {
     for(int x=0;x<imageWidth;x++)
@@ -398,9 +511,12 @@ void MainWindow::quantizationSlot(int quantizationInt)
                                       imageColor[2][i*imageWidth+j]));
     }
     sqLabel->setPixmap(QPixmap::fromImage(*image0));
+    changeimg(image0,20,660);
     this->update();
 }
 
+
+/***************************保存***************************/
 void MainWindow::saveButtonSlot()
 {
     QString fileName =QFileDialog::getSaveFileName(this,
@@ -418,6 +534,8 @@ void MainWindow::saveButtonSlot()
     };
 }
 
+
+/***************************二值化图片***************************/
 void MainWindow::thresholdSliderSlot(int threshold)
 {
     for(int x=0;x<imageWidth;x++)
@@ -445,8 +563,12 @@ void MainWindow::thresholdSliderSlot(int threshold)
         }
     }
     binarizationLabel->setPixmap(QPixmap::fromImage(*image1));
+    changeimg(image1,20,660);
+    this->update();
 }
 
+
+/***************************线性变化***************************/
 void MainWindow::lineSliderSlot(int a)//y=ax+10
 {
 
@@ -486,9 +608,11 @@ void MainWindow::lineSliderSlot(int a)//y=ax+10
         }
     }
     lineLabel->setPixmap(QPixmap::fromImage(*lineimg));
+    changeimg(lineimg,20,660);
+    this->update();
 }
 
-
+/***************************非线性变化***************************/
 void MainWindow::unlineSliderSlot(int a)
 {
     unlineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
@@ -522,9 +646,11 @@ void MainWindow::unlineSliderSlot(int a)
         }
     }
     unlineLabel->setPixmap(QPixmap::fromImage(*unlineimg));
+    changeimg(unlineimg,20,660);
+    this->update();
 }
 
-
+/***************************页面转换***************************/
 void MainWindow::pageSliderSlot(int page)
 {
     pages[currentPage]->hide();
@@ -533,3 +659,21 @@ void MainWindow::pageSliderSlot(int page)
 
 }
 
+/***************************改变直方图所绘制的图像***************************/
+void MainWindow::changeimg(QImage *a, int xo, int yo){
+    oralx = xo;
+    oraly = yo;
+    xmax = xo+300;
+    ymax = yo-300;
+    paintimg = a;
+    for(int i=0;i<imageWidth;i++)
+    {
+        for(int j=0;j<imageHeight;j++)
+        {
+            tempcolor[0][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).red();
+            tempcolor[1][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).green();
+            tempcolor[2][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).blue();
+        }
+    }
+
+}
