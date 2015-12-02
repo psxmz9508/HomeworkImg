@@ -121,12 +121,14 @@ void MainWindow::paintEvent(QPaintEvent *)
         }
         else
         {
-            if(currentPage==2){
+            if(currentPage!=2){
                 drawHistogram();
-                drawHistogram1();
+
             }
             else{
                 drawHistogram();
+                changeimg(image,330,660);
+                drawHistogram1();
             }
         }
 }
@@ -212,7 +214,7 @@ void MainWindow::drawHistogram()
     painter.drawLine(oralx,oraly,xmax,oraly);
     painter.drawLine(xmax,oraly,xmax-5,oraly-5);
     painter.drawLine(xmax,oraly,xmax-5,oraly+5);
-    painter.drawText(xmax,oraly-3,tr("灰度"));
+    painter.drawText(xmax-10,oraly-3,tr("灰度"));
 
     for(int i=0;i<256;i++)
     {
@@ -231,6 +233,7 @@ void MainWindow::drawHistogram1()
     float phist[256];
     float phisttemp[256];
     int eqhist[256];
+
     for(int i=0;i<256;i++)
     {
         hist[i]=0;
@@ -240,15 +243,15 @@ void MainWindow::drawHistogram1()
         eqhist[i]=0;
     }
     int temp;
-
+    resetcolor();
     for(int i=0;i<imageHeight*imageWidth;i++)
     {
-        temp = tempcolor[0][i];
+        temp = imageColor[0][i];
         hist[temp]++;
     }
 
     for(int i=0;i<256;i++){
-        phist[i]=(float)hist[i]/(float)imageHeight*imageWidth;
+        phist[i]=(float)hist[i]/(float)(imageHeight*imageWidth);
     }
 
     for(int i =1;i<256;i++){
@@ -317,7 +320,7 @@ void MainWindow::drawHistogram1()
     painter.drawText(oralx+60,ymax+60,tr(QString::number(stdDev).toLocal8Bit().data()));
     painter.drawText(oralx,ymax+80,tr("像素总数："));
     painter.drawText(oralx+60,ymax+80,tr(QString::number(sum1).toLocal8Bit().data()));
-
+    painter.drawText(oralx+100,ymax,tr("均衡化直方图"));
     //纵轴
     painter.drawLine(oralx,oraly,oralx,ymax);
     painter.drawLine(oralx,ymax,oralx-5,ymax+5);
@@ -328,7 +331,7 @@ void MainWindow::drawHistogram1()
     painter.drawLine(oralx,oraly,xmax,oraly);
     painter.drawLine(xmax,oraly,xmax-5,oraly-5);
     painter.drawLine(xmax,oraly,xmax-5,oraly+5);
-    painter.drawText(xmax,oraly-3,tr("灰度"));
+    painter.drawText(xmax-10,oraly-3,tr("灰度"));
 
     for(int i=0;i<256;i++)
     {
@@ -357,15 +360,7 @@ void MainWindow::addressButttonSlot()
     sqLabel->setPixmap(QPixmap::fromImage(*image));
 
 
-    for(int x=0;x<imageWidth;x++)
-    {
-        for(int y=0;y<imageHeight;y++)
-        {
-            imageColor[0][x*imageWidth+y]=QColor(image->pixel(x,y)).red();
-            imageColor[1][x*imageWidth+y]=QColor(image->pixel(x,y)).green();
-            imageColor[2][x*imageWidth+y]=QColor(image->pixel(x,y)).blue();
-        }
-    }
+    resetcolor();
     delete image1;
     image1 = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
     for(int i=0;i<imageWidth;i++)
@@ -415,15 +410,7 @@ void MainWindow::samplingSlot(int samplingInt)
     int d = (int)(256/samplingInt);
     int dd=d*d;
 
-    for(int x=0;x<imageWidth;x++)
-    {
-        for(int y=0;y<imageHeight;y++)
-        {
-            imageColor[0][x*imageWidth+y]=QColor(image->pixel(x,y)).red();
-            imageColor[1][x*imageWidth+y]=QColor(image->pixel(x,y)).green();
-            imageColor[2][x*imageWidth+y]=QColor(image->pixel(x,y)).blue();
-        }
-    }
+    resetcolor();
     for(int i=0;i<imageHeight;i=i+d)
     {
         for(int j=0;j<imageWidth;j=j+d)
@@ -471,15 +458,7 @@ void MainWindow::samplingSlot(int samplingInt)
 /***************************量化***************************/
 void MainWindow::quantizationSlot(int quantizationInt)
 {
-    for(int x=0;x<imageWidth;x++)
-    {
-        for(int y=0;y<imageHeight;y++)
-        {
-            imageColor[0][x*imageWidth+y]=QColor(image->pixel(x,y)).red();
-            imageColor[1][x*imageWidth+y]=QColor(image->pixel(x,y)).green();
-            imageColor[2][x*imageWidth+y]=QColor(image->pixel(x,y)).blue();
-        }
-    }
+    resetcolor();
 
     int greyScope = 256/quantizationInt;
     int r,g,b,temp;
@@ -538,15 +517,7 @@ void MainWindow::saveButtonSlot()
 /***************************二值化图片***************************/
 void MainWindow::thresholdSliderSlot(int threshold)
 {
-    for(int x=0;x<imageWidth;x++)
-    {
-        for(int y=0;y<imageHeight;y++)
-        {
-            imageColor[0][x*imageWidth+y]=QColor(image->pixel(x,y)).red();
-            imageColor[1][x*imageWidth+y]=QColor(image->pixel(x,y)).green();
-            imageColor[2][x*imageWidth+y]=QColor(image->pixel(x,y)).blue();
-        }
-    }
+    resetcolor();
     delete image1;
     image1 = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
     for(int i=0;i<imageWidth;i++)
@@ -582,24 +553,25 @@ void MainWindow::lineSliderSlot(int a)//y=ax+10
                        imageColor[2][i*imageWidth+j])/3;
             switch (a) {
             case 1:
-                lineimg->setPixel(i,j,qRgb(2*aver+10,
-                                          2*aver+10,
-                                          2*aver+10));
+                lineimg->setPixel(i,j,qRgb(0.9*aver,
+                                          0.9*aver,
+                                          0.9*aver));
                 break;
             case 2:
-                lineimg->setPixel(i,j,qRgb(4*aver+10,
-                                          4*aver+10,
-                                          4*aver+10));
+                lineimg->setPixel(i,j,qRgb(0.2*aver,
+                                          0.2*aver,
+                                          0.2*aver));
                 break;
             case 3:
-                lineimg->setPixel(i,j,qRgb(-2*aver+10,
-                                          -2*aver+10,
-                                          -2*aver+10));
+                lineimg->setPixel(i,j,qRgb(-0.2*aver,
+                                          -0.2*aver,
+                                          -0.2*aver));
                 break;
             case 4:
-                lineimg->setPixel(i,j,qRgb(-4*aver+10,
-                                          -4*aver+10,
-                                          -4*aver+10));
+                lineimg->setPixel(i,j,qRgb(-0.9*aver,
+                                          -0.9*aver,
+                                          -0.9*aver));
+
                 break;
             default:
                 break;
@@ -615,6 +587,7 @@ void MainWindow::lineSliderSlot(int a)//y=ax+10
 /***************************非线性变化***************************/
 void MainWindow::unlineSliderSlot(int a)
 {
+    resetcolor();
     unlineimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
     for(int i=0;i<imageWidth;i++)
     {
@@ -625,19 +598,19 @@ void MainWindow::unlineSliderSlot(int a)
                        imageColor[2][i*imageWidth+j])/3;
             switch (a) {
             case 1:
-                unlineimg->setPixel(i,j,qRgb(aver*aver/255+10,
-                                          aver*aver/255+10,
-                                          aver*aver/255+10));
+                unlineimg->setPixel(i,j,qRgb(aver*aver/255,
+                                          aver*aver/255,
+                                          aver*aver/255));
                 break;
             case 2:
-                unlineimg->setPixel(i,j,qRgb(sqrt(aver)+100,
-                                          sqrt(aver)+100,
-                                          sqrt(aver)+100));
+                unlineimg->setPixel(i,j,qRgb(sqrt(aver)+10,
+                                          sqrt(aver)+10,
+                                          sqrt(aver)+10));
                 break;
             case 3:
-                unlineimg->setPixel(i,j,qRgb(log(aver)+50,
-                                          log(aver)+50,
-                                          log(aver)+50));
+                unlineimg->setPixel(i,j,qRgb(log(aver),
+                                          log(aver),
+                                          log(aver)));
                 break;
 
             default:
@@ -676,4 +649,16 @@ void MainWindow::changeimg(QImage *a, int xo, int yo){
         }
     }
 
+}
+
+void MainWindow::resetcolor(){
+    for(int x=0;x<imageWidth;x++)
+    {
+        for(int y=0;y<imageHeight;y++)
+        {
+            imageColor[0][x*imageWidth+y]=QColor(image->pixel(x,y)).red();
+            imageColor[1][x*imageWidth+y]=QColor(image->pixel(x,y)).green();
+            imageColor[2][x*imageWidth+y]=QColor(image->pixel(x,y)).blue();
+        }
+    }
 }

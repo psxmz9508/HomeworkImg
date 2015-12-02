@@ -92,7 +92,7 @@ private:
     QLabel *unlineLabel;
     QImage *unlineimg;
 
-
+    void resetcolor();
 private slots:
     void addressButttonSlot();
     void samplingSlot(int);
