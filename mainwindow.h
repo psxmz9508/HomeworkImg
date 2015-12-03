@@ -70,8 +70,9 @@ private:
     int xmax;
     int ymax;
     QImage *paintimg;
-    int tempcolor[3][100000];
-    int grey[100000];
+    QSlider *switchHis;
+//    int tempcolor[3][100000];
+
     //二值化标签
     QLabel *binarizationLabel;
     QSlider *thresholdSlider;
@@ -91,9 +92,12 @@ private:
     QImage *unlineimg;
 
     //几何运算
-    QImage *geoimg;
+    QImage *moveimg;
+    QImage *scaleimg;
+    QImage *circleimg;
     QLabel *moveLabel;
-    QLineEdit *move;
+    QLineEdit *movex;
+    QLineEdit *movey;
     QLabel *scaleLabel;
     QLineEdit *scale;
     QLabel *circleLabel;
@@ -120,6 +124,7 @@ private slots:
     void pageSliderSlot(int);
     void lineSliderSlot(int);
     void unlineSliderSlot(int);
+//    void switchHisSlot(int);
     void domoveSlot();
     void doscaleSlot();
     void docircleSlot();

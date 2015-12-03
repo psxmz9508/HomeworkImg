@@ -99,6 +99,37 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
     unlinetransLabel = new QLabel("非线性",pages[2]);
     unlinetransLabel->setGeometry(700,400,35,20);
     unlineSlider->setGeometry(700,420,20,200);
+    
+    //几何变换
+    moveLabel = new QLabel(pages[3]);
+    moveLabel->setScaledContents(true);
+    movex = new QLineEdit("横向",pages[3]);
+    movey = new QLineEdit("纵向",pages[3]);
+    scaleLabel = new QLabel(pages[3]);
+    scaleLabel->setScaledContents(true);
+    scale = new QLineEdit("缩放系数",pages[3]);
+    circleLabel = new QLabel(pages[3]);
+    circleLabel->setScaledContents(true);
+    circle = new QLineEdit("旋转角度",pages[3]);
+    domove = new QPushButton("平移",pages[3]);
+    doscale = new QPushButton("缩放",pages[3]);
+    docircle = new QPushButton("旋转",pages[3]);
+    deleteall = new QPushButton("清空",pages[3]);
+    moveimg = new QImage();
+    scaleimg = new QImage();
+    circleimg = new QImage();
+    moveLabel->setGeometry(330,50,300,300);
+    scaleLabel->setGeometry(20,360,300,300);
+    circleLabel->setGeometry(330,360,300,300);
+    domove->setGeometry(640,50,50,30);
+    doscale->setGeometry(640,90,50,30);
+    docircle->setGeometry(640,130,50,30);
+    movex->setGeometry(690,55,50,20);
+    movey->setGeometry(740,55,50,20);
+    scale->setGeometry(690,95,60,20);
+    circle->setGeometry(690,135,60,20);
+    deleteall->setGeometry(640,170,50,30);
+    
     //开始时在第一页
     pages[0]->show();
 
@@ -113,6 +144,8 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
     connect(domove,SIGNAL(clicked(bool)),this,SLOT(domoveSlot()));
     connect(doscale,SIGNAL(clicked(bool)),this,SLOT(doscaleSlot()));
     connect(docircle,SIGNAL(clicked(bool)),this,SLOT(docircleSlot()));
+    connect(deleteall,SIGNAL(clicked(bool)),this,SLOT(deleteallSlot()));
+//    connect(switchHis,SIGNAL(valueChanged(int)),this,SLOT(switchHisSlot(int)));
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
@@ -150,7 +183,7 @@ void MainWindow::drawHistogram()
 
     for(int i=0;i<imageHeight*imageWidth;i++)
     {
-        temp = tempcolor[0][i];
+        temp = imageColor[0][i];
         hist[temp]++;
     }
 
@@ -628,7 +661,21 @@ void MainWindow::unlineSliderSlot(int a)
 
 /***************************平移***************************/
 void MainWindow::domoveSlot(){
-
+    resetcolor();
+    xmove=movex->text().toInt();
+    ymove=movey->text().toInt();
+    moveimg = new QImage(imageWidth,imageHeight,QImage::Format_ARGB32);
+    for(int x=0;x<imageWidth;x++){
+        for(int y=0;y<imageHeight;y++){
+            if(x-xmove<0||x-xmove>imageWidth||y-ymove<0||y-ymove>imageHeight)
+                moveimg->setPixel(x,y,qRgb(0,0,0));
+            else
+                moveimg->setPixel(x,y,image->pixel(x-xmove,y-ymove));
+//            moveimg->setPixel(x,y,qRgb(150,150,150));
+        }
+    }
+    moveLabel->setPixmap(QPixmap::fromImage(*moveimg));
+    this->update();
 }
 
 /***************************缩放***************************/
@@ -636,10 +683,20 @@ void MainWindow::doscaleSlot(){
 
 }
 
+
 /**************************旋转****************************/
 void MainWindow::docircleSlot(){
 
 }
+
+
+/**************************清空输入信息****************************/
+void MainWindow::deleteallSlot(){
+
+}
+
+
+
 /***************************页面转换***************************/
 void MainWindow::pageSliderSlot(int page)
 {
@@ -651,6 +708,7 @@ void MainWindow::pageSliderSlot(int page)
 
 /***************************改变直方图所绘制的图像***************************/
 void MainWindow::changeimg(QImage *a, int xo, int yo){
+
     oralx = xo;
     oraly = yo;
     xmax = xo+300;
@@ -660,9 +718,9 @@ void MainWindow::changeimg(QImage *a, int xo, int yo){
     {
         for(int j=0;j<imageHeight;j++)
         {
-            tempcolor[0][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).red();
-            tempcolor[1][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).green();
-            tempcolor[2][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).blue();
+            imageColor[0][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).red();
+            imageColor[1][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).green();
+            imageColor[2][i*imageWidth+j]=QColor(paintimg->pixel(i,j)).blue();
         }
     }
 
@@ -677,6 +735,7 @@ void MainWindow::resetcolor(){
             imageColor[0][x*imageWidth+y]=QColor(image->pixel(x,y)).red();
             imageColor[1][x*imageWidth+y]=QColor(image->pixel(x,y)).green();
             imageColor[2][x*imageWidth+y]=QColor(image->pixel(x,y)).blue();
+
         }
     }
 }
