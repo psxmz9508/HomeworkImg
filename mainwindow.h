@@ -73,8 +73,6 @@ private:
     int tempcolor[3][100000];
     int grey[100000];
     //二值化标签
-
-
     QLabel *binarizationLabel;
     QSlider *thresholdSlider;
     QLabel *thresholdLabel;
@@ -92,6 +90,26 @@ private:
     QLabel *unlineLabel;
     QImage *unlineimg;
 
+    //几何运算
+    QImage *geoimg;
+    QLabel *moveLabel;
+    QLineEdit *move;
+    QLabel *scaleLabel;
+    QLineEdit *scale;
+    QLabel *circleLabel;
+    QLineEdit *circle;
+    QPushButton *domove;
+    QPushButton *doscale;
+    QPushButton *docircle;
+    QPushButton *deleteall;
+    void clearall();
+
+    int xmove;
+    int ymove;
+    int kscale;
+    int degree;
+
+
     void resetcolor();
 private slots:
     void addressButttonSlot();
@@ -102,6 +120,10 @@ private slots:
     void pageSliderSlot(int);
     void lineSliderSlot(int);
     void unlineSliderSlot(int);
+    void domoveSlot();
+    void doscaleSlot();
+    void docircleSlot();
+    void deleteallSlot();
 signals:
 
 public slots:

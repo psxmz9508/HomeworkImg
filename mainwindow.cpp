@@ -110,6 +110,9 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
     connect(pageSlider,SIGNAL(valueChanged(int)),this,SLOT(pageSliderSlot(int)));
     connect(lineSlider,SIGNAL(valueChanged(int)),this,SLOT(lineSliderSlot(int)));
     connect(unlineSlider,SIGNAL(valueChanged(int)),this,SLOT(unlineSliderSlot(int)));
+    connect(domove,SIGNAL(clicked(bool)),this,SLOT(domoveSlot()));
+    connect(doscale,SIGNAL(clicked(bool)),this,SLOT(doscaleSlot()));
+    connect(docircle,SIGNAL(clicked(bool)),this,SLOT(docircleSlot()));
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
@@ -623,6 +626,20 @@ void MainWindow::unlineSliderSlot(int a)
     this->update();
 }
 
+/***************************平移***************************/
+void MainWindow::domoveSlot(){
+
+}
+
+/***************************缩放***************************/
+void MainWindow::doscaleSlot(){
+
+}
+
+/**************************旋转****************************/
+void MainWindow::docircleSlot(){
+
+}
 /***************************页面转换***************************/
 void MainWindow::pageSliderSlot(int page)
 {
@@ -651,6 +668,7 @@ void MainWindow::changeimg(QImage *a, int xo, int yo){
 
 }
 
+/**************************获取原图像的像素信息**************************/
 void MainWindow::resetcolor(){
     for(int x=0;x<imageWidth;x++)
     {
@@ -662,3 +680,6 @@ void MainWindow::resetcolor(){
         }
     }
 }
+
+
+
