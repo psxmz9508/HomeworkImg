@@ -1052,6 +1052,57 @@ int MainWindow::convolution(double array[5][5], int xSrc, int ySrc, int x, int y
 
 }
 
+
+//设置自定义模版的文本框数
+void MainWindow::setCustomSize()
+{
+    int x,y;
+    x=customXEdit->text().toInt();
+    y=customYEdit->text().toInt();
+
+    for(int i=0;i<5;i++)
+        for(int j=0;j<5;j++)
+        {
+            if(i<x&&j<y)
+                customEdit[i][j]->show();
+            else
+                customEdit[i][j]->hide();
+        }
+}
+
+//自定义模版算法
+void MainWindow::drawCustom()
+{
+    int x,y;
+    int gray;
+
+    goalImage=new QImage(wSource,hSource,QImage::Format_ARGB32);
+
+    x=customXEdit->text().toInt();
+    y=customYEdit->text().toInt();
+
+    memset(customArray,0,sizeof(customArray));
+
+    //算出算子
+    for(int i=0;i<x;i++)
+        for(int j=0;j<y;j++)
+        {
+            customArray[i][j]=customEdit[i][j]->text().toDouble();
+        }
+
+    for(int i=0;i<wSource;i++)
+        for(int j=0;j<hSource;j++)
+        {
+            gray=convolution(customArray,i,j,x,y);
+            if(gray>255)
+                gray=255;
+            else if(gray<0)
+                gray=0;
+
+            goalImage->setPixel(i,j,qRgb(gray,gray,gray));
+        }
+    goalLabel->setPixmap(QPixmap::fromImage(*goalImage));
+}
 /**************************双线性**************************/
 //void MainWindow::doubleline(QImage* imgl,double x,double y)//变换后图片；变换后x；变换后y
 //{

@@ -109,6 +109,23 @@ private:
     QPushButton *deleteall;
     void clearall();
 
+    //平滑
+    QImage *tempimg;
+    QLabel *smooth;
+    QPushButton *midsmooth;
+    QPushButton *ksmooth;
+    QPushButton *avesmooth;
+    QImage *goalImage;
+    QLabel *smoothimg;
+
+    //锐化
+    QLabel *sharpen;
+    QPushButton *sobsharpen;
+    QPushButton *robsharpen;
+    QPushButton *lapsharpen;
+    QLabel *sharpenLabel;
+    QImage *sharpenimg;
+    int convolution(double array[5][5], int xSrc, int ySrc,int x,int y);
     int xmove;
     int ymove;
     double scalekx;
@@ -117,6 +134,7 @@ private:
     void doubleline(QImage*);
     void resetcolor(QImage*);
 private slots:
+
     void addressButttonSlot();
     void samplingSlot(int);
     void quantizationSlot(int);
@@ -129,6 +147,12 @@ private slots:
     void domoveSlot();
     void doscaleSlot();
     void docircleSlot();
+    void drawMid();
+    void drawKmean();
+    void drawAverage();
+    void drawSobel();
+    void drawRoberts();
+    void drawAplace();
     void deleteallSlot();
 signals:
 
