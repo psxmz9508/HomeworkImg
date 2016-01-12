@@ -3,6 +3,7 @@
 #define MAX_PAGES 5
 #define WIDTH 960
 #define HEIGHT 700
+#define PAI 3.1415926
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
@@ -71,7 +72,6 @@ private:
     int ymax;
     QImage *paintimg;
     QSlider *switchHis;
-//    int tempcolor[3][100000];
 
     //二值化标签
     QLabel *binarizationLabel;
@@ -99,7 +99,8 @@ private:
     QLineEdit *movex;
     QLineEdit *movey;
     QLabel *scaleLabel;
-    QLineEdit *scale;
+    QLineEdit *xscale;
+    QLineEdit *yscale;
     QLabel *circleLabel;
     QLineEdit *circle;
     QPushButton *domove;
@@ -110,11 +111,11 @@ private:
 
     int xmove;
     int ymove;
-    int kscale;
-    int degree;
-
-
-    void resetcolor();
+    double scalekx;
+    double scaleky;
+    double degree;
+    void doubleline(QImage*);
+    void resetcolor(QImage*);
 private slots:
     void addressButttonSlot();
     void samplingSlot(int);

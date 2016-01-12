@@ -168,7 +168,7 @@ void MainWindow::paintEvent(QPaintEvent *)
     if(currentPage ==2){
         drawHistogram();
         changeimg(paintimg,330,660);
-        drawHistogram();
+        drawHistogram1();
 
     }
 }
