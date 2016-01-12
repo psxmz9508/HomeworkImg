@@ -168,7 +168,7 @@ void MainWindow::paintEvent(QPaintEvent *)
     if(currentPage ==2){
         drawHistogram();
         changeimg(paintimg,330,660);
-        drawHistogram();
+        drawHistogram1();
 
     }
 }
@@ -285,14 +285,15 @@ void MainWindow::drawHistogram1()
     int temp;
     for(int i=0;i<imageHeight*imageWidth;i++)
     {
-        temp = imageColor[0][i];
+        temp = imageColor[0][i]*imageColor[0][i]/255;
+        if(temp>255) temp=255;
         hist[temp]++;
     }
 
-    for(int i=0;i<256;i++){
-        phist[i]=hist[i]/(imageHeight*imageWidth);
-    }
 
+    for(int i=0;i<256;i++){
+        phist[i]=hist[i]/(double)(imageHeight*imageWidth);
+    }
     for(int i =1;i<256;i++){
         if(i==0)
             phisttemp[i]=phist[i];
@@ -300,11 +301,12 @@ void MainWindow::drawHistogram1()
             phisttemp[i]=phisttemp[i-1]+phist[i];
     }
 
+
     for(int i =1;i<256;i++){
         eqhist[i]=int(255.0*phisttemp[i]+0.5);
     }
     for(int i=0;i<255;i++){
-        result[i] = hist[int(eqhist[i])];
+        result[i] = hist[(int)eqhist[i]];
     }
 
     int sum=0;
@@ -343,7 +345,7 @@ void MainWindow::drawHistogram1()
     }
     for(int i=0;i<256;i++)
     {
-        result[i]=(int)((result[i]/(float)max)*250);
+        result[i]=(int)((hist[i]/(float)max)*250);
     }
 
     QPainter painter(this);
@@ -351,7 +353,15 @@ void MainWindow::drawHistogram1()
     pen.setColor(Qt::black);
     painter.setPen(pen);
 
-    painter.drawText(oralx+100,ymax,tr("均衡化直方图"));
+    painter.drawText(oralx,ymax+20,tr("平均灰度："));
+    painter.drawText(oralx+60,ymax+20,tr(QString::number(aver).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+40,tr("中值灰度："));
+    painter.drawText(oralx+60,ymax+40,tr(QString::number(mid).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+60,tr("标准差："));
+    painter.drawText(oralx+60,ymax+60,tr(QString::number(stdDev).toLocal8Bit().data()));
+    painter.drawText(oralx,ymax+80,tr("像素总数："));
+    painter.drawText(oralx+60,ymax+80,tr(QString::number(sum1).toLocal8Bit().data()));
+
     //纵轴
     painter.drawLine(oralx,oraly,oralx,ymax);
     painter.drawLine(oralx,ymax,oralx-5,ymax+5);
@@ -371,7 +381,6 @@ void MainWindow::drawHistogram1()
             painter.drawText(oralx+i,oraly+10,tr(QString::number(i).toLocal8Bit().data()));
     }
     painter.end();
-    resetcolor(image);
 }
 /***************************获取图片地址 处理图片数据***************************/
 void MainWindow::addressButttonSlot()
